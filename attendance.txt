@@ -1,0 +1,48 @@
+def seeattendence():
+    employeeattendence = Toplevel()
+    txt = Text(employeeattendence)
+    cur.execute("SELECT presence,leaves FROM attendence WHERE employee_id=?", (login,))
+    row = cur.fetchall()
+    x1="total present: "
+    x2="total absent: "
+    x3="your attendence: "
+    x4=row[0][0]+row[0][1]
+    x5=(row[0][0]/x4)*100
+    txt.insert(INSERT, x1)
+    txt.insert(INSERT,row[0][0])
+    txt.insert(INSERT, '\n')
+    txt.insert(INSERT, x2)
+    txt.insert(INSERT, row[0][1])
+    txt.insert(INSERT, '\n')
+    txt.insert(INSERT, x3)
+    txt.insert(INSERT, x5)
+    txt.pack()
+
+def attendencemark():
+    message = "Enter the attendence details "
+    title = "attendence"
+    fieldNames = ["Employee ID"]
+    fieldValues = []
+    fieldValues = multenterbox(message, title, fieldNames)
+    cur.execute("SELECT presence,leaves FROM attendence WHERE employee_id=?", (fieldValues[0],))
+    row = cur.fetchall()
+    print("row:",row)
+    message1 = "mark attendence"
+    title1 = "attendence"
+    choices = ["Present","Absent"]
+    choice = choicebox(message1, title1, choices)
+    print("choice:",choice)
+    present = row[0][0]
+    leave = row[0][1]
+    if choice == 'Present':
+        present=present+1
+    if choice == 'Absent':
+        leave=leave+1
+    conn.execute("update attendence set presence=? , leaves=? where employee_id=? ",(present,leave,fieldValues[0]))
+    conn.commit()
+    tkinter.messagebox.showinfo("Attendence","Attendence is marked!")
+
+conn.execute("CREATE TABLE if not EXISTS attendence (employee_id text primary key, presence int, leaves int, FOREIGN KEY (employee_id) REFERENCES employee (employee_id))")
+
+conn.execute("INSERT INTO attendence(employee_id,presence,leaves) VALUES (?,?,?)",
+                     (fieldValues[0], 0,0))
